@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MarketPlace is
@@ -25,26 +24,21 @@ contract MarketPlace is
 
     mapping(uint => OrderInfo) public orders;
 
+    event BuyOrder(address indexed _buyer, uint _orderId, uint _amount);
+    event CancelOrder(uint _orderId);
+
     function createOrder(
         address _targetAddr,
+        address _payment,
         uint _tokenId,
         uint _amount,
         uint _price
     ) external {
         crrentOrderId++;
         orders[crrentOrderId] = OrderInfo(
-            _targetAddr,
             msg.sender,
-            address(0),
-            _tokenId,
-            _amount,
-            _price
-        );
-
-        emit Order(
             _targetAddr,
-            msg.sender,
-            crrentOrderId,
+            _payment,
             _tokenId,
             _amount,
             _price
@@ -81,10 +75,12 @@ contract MarketPlace is
             _Order.seller,
             _Order.price
         );
-        emit Order(
-            _Order.targetAddr,
+        emit BoughtOrder(
             _Order.seller,
-            orderId,
+            msg.sender,
+            _Order.payment,
+            _Order.targetAddr,
+            crrentOrderId,
             _Order.tokenId,
             _Order.amount,
             _Order.price
@@ -96,6 +92,8 @@ contract MarketPlace is
         require(msg.sender == orders[orderId].seller, "Market: not seller.");
         delete orders[orderId];
     }
+
+    //对没有上架的NFT 进行出价 如果拥有者同意 将卖出
 
     //====================CONFIG==================
     function setPrice(uint _price) external onlyOwner {

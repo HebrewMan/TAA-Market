@@ -12,10 +12,6 @@ describe("Lock", function () {
   
     console.log("Keccak256 hash of the concatenated string:", hash);
   }
-  
-
- 
-
 
 });
 
