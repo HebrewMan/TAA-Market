@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-
-// Uncomment this line to use console.log
 import "hardhat/console.sol";
-import "./interface/IMarketPlace.sol";
+import "./interfaces/IMarketPlace.sol";
+import "./utils/VerifyERCType.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
@@ -17,52 +16,52 @@ contract MarketPlace is
     ReentrancyGuard,
     ERC721Holder,
     ERC1155Holder,
-    Ownable
+    Ownable,
+    VerifyERCType
 {
     uint crrentOrderId;
-    uint public price = 1 ether;
 
     mapping(uint => OrderInfo) public orders;
 
-    event BuyOrder(address indexed _buyer, uint _orderId, uint _amount);
-    event CancelOrder(uint _orderId);
-
     function createOrder(
-        address _targetAddr,
+        address _nftAddr,
         address _payment,
         uint _tokenId,
-        uint _amount,
         uint _price
     ) external {
         crrentOrderId++;
         orders[crrentOrderId] = OrderInfo(
             msg.sender,
-            _targetAddr,
+            _nftAddr,
             _payment,
             _tokenId,
-            _amount,
+            _price
+        );
+        emit CreatedOrder(
+            msg.sender,
+            _nftAddr,
+            _payment,
+            crrentOrderId,
+            _tokenId,
             _price
         );
     }
 
     function buyOrder(uint orderId) external payable nonReentrant {
         OrderInfo memory _Order = orders[orderId];
+        require(verifyByAddress(_Order.nftAddr) != 20, "nftAddr is error.");
         require(msg.value >= _Order.price);
 
-        (bool sent, ) = payable(_Order.seller).call{value: msg.value}("");
-        require(sent, "Failed to send Ether");
-        //transfer
-
-        if (_Order.amount > 1) {
-            IERC1155(_Order.targetAddr).safeTransferFrom(
+        if (verifyByAddress(_Order.nftAddr) == 1155) {
+            IERC1155(_Order.nftAddr).safeTransferFrom(
                 address(this),
                 msg.sender,
                 _Order.tokenId,
-                _Order.amount,
+                1,
                 "0x"
             );
         } else {
-            IERC721(_Order.targetAddr).safeTransferFrom(
+            IERC721(_Order.nftAddr).safeTransferFrom(
                 address(this),
                 msg.sender,
                 _Order.tokenId,
@@ -70,7 +69,7 @@ contract MarketPlace is
             );
         }
 
-        IERC20(_Order.targetAddr).transferFrom(
+        IERC20(_Order.nftAddr).transferFrom(
             msg.sender,
             _Order.seller,
             _Order.price
@@ -79,26 +78,25 @@ contract MarketPlace is
             _Order.seller,
             msg.sender,
             _Order.payment,
-            _Order.targetAddr,
+            _Order.nftAddr,
             crrentOrderId,
             _Order.tokenId,
-            _Order.amount,
             _Order.price
         );
         delete orders[orderId];
     }
 
-    function cancelOrder(uint orderId) external {
-        require(msg.sender == orders[orderId].seller, "Market: not seller.");
-        delete orders[orderId];
+    function cancelOrder(uint _orderId) external {
+        require(msg.sender == orders[_orderId].seller, "Market: not seller.");
+        delete orders[_orderId];
     }
 
-    //对没有上架的NFT 进行出价 如果拥有者同意 将卖出
+    function getOrder(uint _orderId) external view returns (OrderInfo memory) {
+        return orders[_orderId];
+    }
 
     //====================CONFIG==================
-    function setPrice(uint _price) external onlyOwner {
-        price = _price;
-    }
+    function setPrice(uint _price) external onlyOwner {}
 
     receive() external payable {}
 

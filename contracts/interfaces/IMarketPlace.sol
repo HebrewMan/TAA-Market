@@ -5,13 +5,12 @@ pragma solidity ^0.8.9;
 // import "hardhat/console.sol";
 
 interface IMarketPlace {
-    event SoldOrder(
+    event CreatedOrder(
         address indexed _seller,
-        address indexed _payment,
         address indexed _nft,
+        address indexed _payment,
         uint _orderId,
         uint _tokenId,
-        uint _amount,
         uint _price
     );
 
@@ -22,7 +21,6 @@ interface IMarketPlace {
         address _nft,
         uint _orderId,
         uint _tokenId,
-        uint _amount,
         uint _price
     );
 
@@ -30,18 +28,16 @@ interface IMarketPlace {
 
     struct OrderInfo {
         address seller;
-        address targetAddr;
+        address nftAddr;
         address payment;
         uint tokenId;
-        uint amount;
         uint price;
     }
 
     function createOrder(
-        address targetAddr,
+        address nftAddr,
         address payment,
         uint tokenId,
-        uint amount,
         uint price
     ) external;
 
@@ -49,5 +45,5 @@ interface IMarketPlace {
 
     function cancelOrder(uint orderId) external;
 
-    // function
+    function getOrder(uint orderId) external view returns (OrderInfo memory);
 }
