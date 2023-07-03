@@ -45,5 +45,4 @@ interface IMarketPlace {
 
     function cancelOrder(uint orderId) external;
 
-    function getOrder(uint orderId) external view returns (OrderInfo memory);
 }

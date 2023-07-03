@@ -19,7 +19,7 @@ contract MarketPlace is
     Ownable,
     VerifyERCType
 {
-    uint crrentOrderId;
+    uint public crrentOrderId;
 
     mapping(uint => OrderInfo) public orders;
 
@@ -37,6 +37,24 @@ contract MarketPlace is
             _tokenId,
             _price
         );
+
+        if (verifyByAddress(_nftAddr) == 1155) {
+            IERC1155(_nftAddr).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _tokenId,
+                1,
+                "0x"
+            );
+        } else {
+            IERC721(_nftAddr).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _tokenId,
+                "0x"
+            );
+        }
+
         emit CreatedOrder(
             msg.sender,
             _nftAddr,
@@ -50,7 +68,9 @@ contract MarketPlace is
     function buyOrder(uint orderId) external payable nonReentrant {
         OrderInfo memory _Order = orders[orderId];
         require(verifyByAddress(_Order.nftAddr) != 20, "nftAddr is error.");
-        require(msg.value >= _Order.price);
+        if(_Order.payment == address(0)){
+            require(msg.value >= _Order.price,"Insufficient balance in ether.");
+        }
 
         if (verifyByAddress(_Order.nftAddr) == 1155) {
             IERC1155(_Order.nftAddr).safeTransferFrom(
@@ -61,6 +81,9 @@ contract MarketPlace is
                 "0x"
             );
         } else {
+         
+            console.log("==================",_Order.nftAddr);
+
             IERC721(_Order.nftAddr).safeTransferFrom(
                 address(this),
                 msg.sender,
@@ -88,11 +111,23 @@ contract MarketPlace is
 
     function cancelOrder(uint _orderId) external {
         require(msg.sender == orders[_orderId].seller, "Market: not seller.");
+        if (verifyByAddress(orders[_orderId].nftAddr) == 1155) {
+            IERC1155(orders[_orderId].nftAddr).safeTransferFrom(
+                address(this),
+                msg.sender,
+                orders[_orderId].tokenId,
+                1,
+                "0x"
+            );
+        } else {
+            IERC721(orders[_orderId].nftAddr).safeTransferFrom(
+                address(this),
+                msg.sender,
+                orders[_orderId].tokenId,
+                "0x"
+            );
+        }
         delete orders[_orderId];
-    }
-
-    function getOrder(uint _orderId) external view returns (OrderInfo memory) {
-        return orders[_orderId];
     }
 
     //====================CONFIG==================
