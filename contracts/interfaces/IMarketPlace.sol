@@ -24,7 +24,7 @@ interface IMarketPlace {
         uint _price
     );
 
-    event CanceledOrder(address indexed seller, uint orderId);
+    event CanceledOrder(uint orderId);
 
     struct OrderInfo {
         address seller;
