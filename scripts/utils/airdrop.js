@@ -22,13 +22,13 @@ function createArray(strings, amount) {
   
 
 const addrs = [
-    "0x502eb745df54e47eef433e5e28da21a47ade7b20",
-    "0x4408c492c042e2b7f1ee54f54272b45317f31b3f",
-    "0xbb1cde4ae95bbb3190804dc2143501c044243e34",
-    "0xb9445bd3d626ac9df701af1e92e315544b88d275",
-    "0x381d885aadeb9ef2a2fd2be408d3c5f441a360cc"
+  "0x3Ed832cA26842564B6d8906f142eD3B58BFFc744",
+  "0xf97eBEf97563C6971cBBAC64a75af5F85Fd0A0cb",
+  "0x9f62168c20425aDB44F3dF1e51dc8c64ef1937dD",
+  "0xFb82E513707399d7DBa8909702d99913D5ba022A",
+  "0x612522a4325aDa8a06507C30a8b836A24C72d75f"
 ]
-const result = createArray(addrs,200);
+const result = createArray(addrs,100);
 console.log(result);
 
 const outputFilePath = __dirname+'/whiteList.txt';

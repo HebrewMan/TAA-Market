@@ -24,6 +24,18 @@ module.exports = {
       zksync: true,
       verifyURL: 'https://zksync2-testnet-explorer.zksync.dev/contract_verification'  // Verification endpoint
     },
+    aitdTest: {
+      url: "http://http-testnet.aitd.io",
+      chainId: 1320,
+      gasPrice: 50000000000,
+      accounts: [process.env.DEPLOY_PRIVATE_KEY]
+    },
+    aitdMain: {
+      url: "https://walletrpc.aitd.io",
+      chainId: 1319,
+      gasPrice: 50000000000,
+      accounts: [process.env.DEPLOY_PRIVATE_KEY]
+    },
   },
   solidity: {
     version: "0.8.17",
